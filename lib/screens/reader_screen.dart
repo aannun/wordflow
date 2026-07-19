@@ -90,23 +90,29 @@ class _ReaderScreenState extends State<ReaderScreen> {
     } else {
       _timer?.cancel();
       _saveProgress();
+      _revealUi();
     }
   }
 
   void _startTimer() {
     _timer?.cancel();
     _timer = Timer.periodic(_tickDuration, (_) {
+      var reachedEnd = false;
       setState(() {
         _index++;
         if (_index >= _words!.length) {
           _index = _words!.length - 1;
           _isPlaying = false;
           _timer?.cancel();
-          _saveProgress();
+          reachedEnd = true;
         } else if (_index % 25 == 0) {
           _saveProgress();
         }
       });
+      if (reachedEnd) {
+        _saveProgress();
+        _revealUi();
+      }
     });
   }
 
