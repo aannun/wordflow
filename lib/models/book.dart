@@ -17,3 +17,11 @@ class Book {
     this.removable = false,
   });
 }
+
+/// Thrown by [Book.loadWords] when a book that isn't cached locally can't
+/// be fetched because there's no network connection.
+class BookUnavailableOfflineException implements Exception {
+  final String bookTitle;
+
+  const BookUnavailableOfflineException(this.bookTitle);
+}

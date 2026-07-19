@@ -36,6 +36,7 @@ class ReaderScreen extends StatefulWidget {
 
 class _ReaderScreenState extends State<ReaderScreen> {
   List<String>? _words;
+  bool _unavailableOffline = false;
   int _index = 0;
   bool _isPlaying = false;
   int _wpm = _defaultWpm;
@@ -60,7 +61,15 @@ class _ReaderScreenState extends State<ReaderScreen> {
     final savedWpm = prefs.getInt(_wpmPrefKey);
     final savedOrpFixed = prefs.getBool(_orpFixedPrefKey);
     final savedIndex = await ReadingProgressStore.load(_bookId);
-    final words = await widget.book.loadWords();
+
+    final List<String> words;
+    try {
+      words = await widget.book.loadWords();
+    } on BookUnavailableOfflineException {
+      if (mounted) setState(() => _unavailableOffline = true);
+      return;
+    }
+
     if (!mounted) return;
     setState(() {
       _words = words;
@@ -200,7 +209,9 @@ class _ReaderScreenState extends State<ReaderScreen> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: words == null
+      body: _unavailableOffline
+          ? _OfflineUnavailable(title: widget.book.title)
+          : words == null
           ? const Center(child: CircularProgressIndicator())
           : words.isEmpty
           ? const Center(
@@ -377,6 +388,49 @@ class _ReaderTopBar extends StatelessWidget {
             onPressed: onRestart,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _OfflineUnavailable extends StatelessWidget {
+  final String title;
+
+  const _OfflineUnavailable({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.cloud_off, color: Colors.white54, size: 56),
+            const SizedBox(height: 16),
+            Text(
+              '"$title" non è disponibile offline',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white, fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Aprilo una volta con la connessione attiva: da quel '
+              'momento resterà leggibile anche offline.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white54, fontSize: 13),
+            ),
+            const SizedBox(height: 24),
+            TextButton.icon(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: const Icon(Icons.arrow_back, color: Colors.white70),
+              label: const Text(
+                'Torna alla libreria',
+                style: TextStyle(color: Colors.white70),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

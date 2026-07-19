@@ -54,6 +54,21 @@ class WebBookStore {
   }
 
   static String _textKey(String id) => 'web_book_text_$id';
+
+  /// Caches the text of a bundled (app-shipped) book the first time it's
+  /// actually opened, so it stays readable offline afterwards without
+  /// needing every bundled book to be downloaded upfront.
+  static Future<String?> readCachedBundledText(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_bundledCacheKey(id));
+  }
+
+  static Future<void> cacheBundledText(String id, String text) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_bundledCacheKey(id), text);
+  }
+
+  static String _bundledCacheKey(String id) => 'bundled_cache_$id';
 }
 
 class WebBookEntry {
