@@ -19,13 +19,21 @@
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="Lettore RSVP: mostra i libri una parola alla volta al centro dello schermo.">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#000000">
 
-  <!-- iOS meta tags & icons -->
+  <!--
+    Deliberately NOT using viewport-fit=cover + black-translucent here.
+    That combination draws content under the iOS status bar/notch, but
+    Flutter Web's safe-area (MediaQuery) detection in standalone/home-screen
+    mode isn't reliable enough to compensate for it, leaving the top strip
+    visually present but untappable (iOS still reserves it for system
+    gestures). Using an opaque status bar instead makes iOS exclude that
+    area from the viewport itself, so there's no mismatch to get wrong.
+  -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="WordFlow">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
