@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -15,28 +16,42 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
-  test('add, list, read and delete books stored in the browser', () async {
-    expect(await BookRepository.listBooks(), isEmpty);
+  test('add, list, read and delete .txt books stored in the browser', () async {
+    final before = await BookRepository.listBooks();
+    expect(before.where((b) => b.removable), isEmpty);
 
+    await BookRepository.addBook('Zeta.txt', utf8.encode('z is last'));
     await BookRepository.addBook(
-      'Zeta',
-      utf8.encode('z is last'),
-    );
-    await BookRepository.addBook(
-      'Alpha',
+      'Alpha.txt',
       Uint8List.fromList(utf8.encode('hello world')),
     );
 
     final books = await BookRepository.listBooks();
-    expect(books.map((b) => b.title).toList(), ['Alpha', 'Zeta']);
+    final ownTitles = books
+        .where((b) => b.removable)
+        .map((b) => b.title)
+        .toList();
+    expect(ownTitles, ['Alpha', 'Zeta']);
 
     final alpha = books.firstWhere((b) => b.title == 'Alpha');
     expect(await alpha.loadWords(), ['hello', 'world']);
 
     await BookRepository.deleteBook(alpha.id);
+    final afterDelete = await BookRepository.listBooks();
     expect(
-      (await BookRepository.listBooks()).map((b) => b.title),
+      afterDelete.where((b) => b.removable).map((b) => b.title),
       ['Zeta'],
     );
+  });
+
+  test('uploading a .pdf extracts and stores its text', () async {
+    final bytes = File('test/fixtures/sample_book.pdf').readAsBytesSync();
+
+    await BookRepository.addBook('Report.pdf', bytes);
+
+    final books = await BookRepository.listBooks();
+    final report = books.firstWhere((b) => b.title == 'Report');
+    expect(report.removable, isTrue);
+    expect(await report.loadWords(), contains('beautiful'));
   });
 }

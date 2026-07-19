@@ -10,7 +10,7 @@ class BookRepository {
 
   static Future<List<Book>> listBooks() => BundledBookRepository.listBooks();
 
-  static Future<void> addBook(String title, List<int> bytes) {
+  static Future<void> addBook(String filename, List<int> bytes) {
     throw UnsupportedError('Not supported on this platform.');
   }
 

@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import '../models/book.dart';
+import 'book_format.dart';
 import 'bundled_book_repository.dart';
 import 'web_book_store.dart';
 import 'word_tokenizer.dart';
@@ -36,8 +37,12 @@ class BookRepository {
     return books;
   }
 
-  static Future<void> addBook(String title, List<int> bytes) async {
-    final text = WordTokenizer.decodeText(Uint8List.fromList(bytes));
+  /// [filename] is the original picked filename (with extension) — needed
+  /// to tell a .pdf from a .txt upload; the display title is derived from
+  /// it here.
+  static Future<void> addBook(String filename, List<int> bytes) async {
+    final title = titleFromFilename(filename);
+    final text = textFromBookBytes(Uint8List.fromList(bytes), filename);
     await WebBookStore.add(title, text);
   }
 

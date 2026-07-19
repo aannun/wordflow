@@ -37,6 +37,7 @@ class ReaderScreen extends StatefulWidget {
 class _ReaderScreenState extends State<ReaderScreen> {
   List<String>? _words;
   bool _unavailableOffline = false;
+  bool _loadError = false;
   int _index = 0;
   bool _isPlaying = false;
   int _wpm = _defaultWpm;
@@ -67,6 +68,13 @@ class _ReaderScreenState extends State<ReaderScreen> {
       words = await widget.book.loadWords();
     } on BookUnavailableOfflineException {
       if (mounted) setState(() => _unavailableOffline = true);
+      return;
+    } catch (_) {
+      // Covers e.g. a corrupt/encrypted/image-only PDF with no
+      // extractable text — extraction can throw in ways specific to the
+      // PDF library, so this is deliberately a catch-all rather than a
+      // narrower type.
+      if (mounted) setState(() => _loadError = true);
       return;
     }
 
@@ -210,7 +218,20 @@ class _ReaderScreenState extends State<ReaderScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: _unavailableOffline
-          ? _OfflineUnavailable(title: widget.book.title)
+          ? _ReaderMessage(
+              icon: Icons.cloud_off,
+              title: '"${widget.book.title}" non è disponibile offline',
+              subtitle: 'Aprilo una volta con la connessione attiva: da '
+                  'quel momento resterà leggibile anche offline.',
+            )
+          : _loadError
+          ? const _ReaderMessage(
+              icon: Icons.error_outline,
+              title: 'Non è stato possibile leggere questo file',
+              subtitle: 'Il PDF potrebbe essere protetto, danneggiato, o '
+                  'contenere solo pagine scansionate senza testo '
+                  'selezionabile.',
+            )
           : words == null
           ? const Center(child: CircularProgressIndicator())
           : words.isEmpty
@@ -393,10 +414,18 @@ class _ReaderTopBar extends StatelessWidget {
   }
 }
 
-class _OfflineUnavailable extends StatelessWidget {
+/// A full-screen message shown instead of the reader when the book can't
+/// be displayed (offline and not cached yet, or a load/parse failure).
+class _ReaderMessage extends StatelessWidget {
+  final IconData icon;
   final String title;
+  final String subtitle;
 
-  const _OfflineUnavailable({required this.title});
+  const _ReaderMessage({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -406,19 +435,18 @@ class _OfflineUnavailable extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.cloud_off, color: Colors.white54, size: 56),
+            Icon(icon, color: Colors.white54, size: 56),
             const SizedBox(height: 16),
             Text(
-              '"$title" non è disponibile offline',
+              title,
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.white, fontSize: 16),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Aprilo una volta con la connessione attiva: da quel '
-              'momento resterà leggibile anche offline.',
+            Text(
+              subtitle,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white54, fontSize: 13),
+              style: const TextStyle(color: Colors.white54, fontSize: 13),
             ),
             const SizedBox(height: 24),
             TextButton.icon(

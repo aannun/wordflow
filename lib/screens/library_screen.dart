@@ -37,18 +37,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
   Future<void> _pickAndAddBook() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['txt'],
+      allowedExtensions: ['txt', 'pdf'],
       withData: true,
     );
     final picked = result?.files.firstOrNull;
     final bytes = picked?.bytes;
     if (picked == null || bytes == null) return;
 
-    final title = picked.name.replaceAll(
-      RegExp(r'\.txt$', caseSensitive: false),
-      '',
-    );
-    await BookRepository.addBook(title, bytes);
+    await BookRepository.addBook(picked.name, bytes);
     await _refresh();
   }
 
@@ -154,13 +150,13 @@ class _EmptyState extends StatelessWidget {
                 if (uploadMode)
                   const Text(
                     "Tocca il pulsante '+' in basso per caricare un file "
-                    '.txt dal telefono.',
+                    '.txt o .pdf dal telefono.',
                     textAlign: TextAlign.center,
                   )
                 else ...[
                   const Text(
-                    'Copia i tuoi file .txt in questa cartella, poi trascina '
-                    'in basso per aggiornare:',
+                    'Copia i tuoi file .txt o .pdf in questa cartella, poi '
+                    'trascina in basso per aggiornare:',
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 12),

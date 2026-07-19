@@ -41,8 +41,13 @@ dependencies:
   # Persist the last chosen reading speed
   shared_preferences: ^2.3.3
 
-  # Lets the web build upload a .txt book straight from the phone/browser
+  # Lets the web build upload a book straight from the phone/browser
   file_picker: ^8.1.2
+
+  # PDF text extraction. Pure Dart, so it works on every platform this app
+  # targets (including web) without native plugin code. Free for personal
+  # use under Syncfusion's Community License.
+  syncfusion_flutter_pdf: ^30.0.0
 
 dev_dependencies:
   flutter_test:
