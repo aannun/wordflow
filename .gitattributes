@@ -1,0 +1,11 @@
+# Never line-ending-normalize binary files. Without this, Git can
+# corrupt them on checkout when core.autocrlf is enabled (as it is by
+# default on Windows) if its own content-based binary detection doesn't
+# recognize them as binary (this happened to a small test .pdf fixture).
+*.pdf binary
+*.png binary
+*.ico binary
+*.jpg binary
+*.jpeg binary
+*.ttf binary
+*.otf binary
