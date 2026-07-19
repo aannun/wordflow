@@ -1,12 +1,14 @@
 import 'dart:typed_data';
 
 import '../models/book.dart';
+import 'bundled_book_repository.dart';
 import 'web_book_store.dart';
 import 'word_tokenizer.dart';
 
-/// Books stored directly in the browser (via [WebBookStore]) — web
-/// implementation. There's no filesystem folder to scan, so books are
-/// added manually through the library screen's upload button instead.
+/// Books stored directly in the browser (via [WebBookStore]), plus the
+/// books bundled with the app — web implementation. There's no filesystem
+/// folder to scan, so uploaded books are added manually through the
+/// library screen's upload button instead.
 class BookRepository {
   static Future<String?> getBooksFolderPath() async => null;
 
@@ -15,16 +17,18 @@ class BookRepository {
   static Future<List<Book>> listBooks() async {
     final entries = await WebBookStore.listAll();
 
-    final books = entries
-        .map(
-          (e) => Book(
-            id: e.id,
-            title: e.title,
-            loadWords: () async =>
-                WordTokenizer.tokenizeText(await WebBookStore.readText(e.id)),
-          ),
-        )
-        .toList();
+    final ownBooks = entries.map(
+      (e) => Book(
+        id: e.id,
+        title: e.title,
+        removable: true,
+        loadWords: () async =>
+            WordTokenizer.tokenizeText(await WebBookStore.readText(e.id)),
+      ),
+    );
+
+    final bundled = await BundledBookRepository.listBooks();
+    final books = [...bundled, ...ownBooks];
 
     books.sort(
       (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),

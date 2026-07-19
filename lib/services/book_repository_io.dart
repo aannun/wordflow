@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 import '../models/book.dart';
+import 'bundled_book_repository.dart';
 import 'word_tokenizer.dart';
 
 /// Handles the "books" folder where the user copies .txt files to read,
@@ -41,12 +42,13 @@ class BookRepository {
 
   static bool get supportsManualUpload => false;
 
-  /// Lists every .txt file found in the books folder, sorted by title.
+  /// Lists every .txt file found in the books folder, plus the books
+  /// bundled with the app, sorted by title.
   static Future<List<Book>> listBooks() async {
     final dir = await getBooksDirectory();
     final entries = await dir.list().toList();
 
-    final books = entries
+    final ownBooks = entries
         .whereType<File>()
         .where((f) => f.path.toLowerCase().endsWith('.txt'))
         .map(
@@ -56,8 +58,10 @@ class BookRepository {
             loadWords: () async =>
                 WordTokenizer.tokenizeBytes(await f.readAsBytes()),
           ),
-        )
-        .toList();
+        );
+
+    final bundled = await BundledBookRepository.listBooks();
+    final books = [...bundled, ...ownBooks];
 
     books.sort(
       (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),

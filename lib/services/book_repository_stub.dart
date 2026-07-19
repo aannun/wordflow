@@ -1,4 +1,5 @@
 import '../models/book.dart';
+import 'bundled_book_repository.dart';
 
 /// Fallback for platforms that are neither dart:io nor web. Should never
 /// actually be selected by Flutter's supported build targets.
@@ -7,7 +8,7 @@ class BookRepository {
 
   static bool get supportsManualUpload => false;
 
-  static Future<List<Book>> listBooks() async => [];
+  static Future<List<Book>> listBooks() => BundledBookRepository.listBooks();
 
   static Future<void> addBook(String title, List<int> bytes) {
     throw UnsupportedError('Not supported on this platform.');

@@ -22,6 +22,11 @@ class _FakePathProviderPlatform extends PathProviderPlatform
 }
 
 void main() {
+  // BookRepository now also lists bundled assets, which requires the
+  // Flutter binding (asset loading) to be initialized even in a plain
+  // `test()`, not just `testWidgets()`.
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   test('creates the books folder and lists only .txt files by title', () async {
     final base = Directory.systemTemp.createTempSync('wordflow_repo_');
     PathProviderPlatform.instance = _FakePathProviderPlatform(base.path);

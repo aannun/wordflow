@@ -100,7 +100,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 return ListTile(
                   leading: const Icon(Icons.menu_book_outlined),
                   title: Text(book.title),
-                  trailing: BookRepository.supportsManualUpload
+                  trailing: book.removable
                       ? IconButton(
                           icon: const Icon(Icons.delete_outline),
                           tooltip: 'Rimuovi',

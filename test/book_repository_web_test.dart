@@ -6,6 +6,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wordflow/services/book_repository_web.dart';
 
 void main() {
+  // BookRepository now also lists bundled assets, which requires the
+  // Flutter binding (asset loading) to be initialized even in a plain
+  // `test()`, not just `testWidgets()`.
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   setUp(() {
     SharedPreferences.setMockInitialValues({});
   });
