@@ -368,14 +368,25 @@ class _ReaderScreenState extends State<ReaderScreen>
   Future<void> _cycleDisplayMode() async {
     final modes = ReaderDisplayMode.values;
     final next = modes[(_displayMode.index + 1) % modes.length];
+
+    // Whichever mechanism (discrete timer or continuous animation) was
+    // driving the old mode has no idea the mode just changed underneath
+    // it, so it must be stopped and, if we were playing, replaced with
+    // whatever drives the new mode — otherwise playback either keeps
+    // ticking discretely inside the new scrolling view, or freezes
+    // entirely when leaving it.
+    _stopAdvancing();
+
     setState(() {
       _displayMode = next;
       if (next == ReaderDisplayMode.horizontalScroll) {
         _recomputeScrollWindow(_index);
-        _scrollAnim.stop();
         _scrollAnim.value = 0;
       }
     });
+
+    if (_isPlaying) _startAdvancing();
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_displayModePrefKey, next.index);
     _resetHideTimer();
